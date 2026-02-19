@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SN1 / SN2 / E1 / E2 Decision Flowchart</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #1a1a1a;
+    padding: 30px 20px 60px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+  }
+  .legend {
+    display: flex; justify-content: center; gap: 24px;
+    margin-bottom: 30px; flex-wrap: wrap;
+  }
+  .legend span {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; color: #444;
+  }
+  .legend .dot {
+    width: 14px; height: 14px; border-radius: 3px; border: 2.5px solid;
+  }
+
+  /* ===== FLOWCHART GRID ===== */
+  .chart {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 160px;
+  }
+
+  /* ===== NODE STYLES ===== */
+  .node {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .degree-label {
+    font-size: 18px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 10px;
+    background: #f1f5f9;
+    border: 2.5px solid #334155;
+    border-radius: 10px;
+    padding: 8px 24px;
+  }
+  .question {
+    background: #f9fafb;
+    border: 2px solid #9ca3af;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin: 6px 0;
+  }
+  .result-sn2 {
+    background: #eff6ff;
+    border: 3px solid #2563eb;
+    color: #2563eb;
+  }
+  .result-sn1 {
+    background: #f0fdf4;
+    border: 3px solid #16a34a;
+    color: #16a34a;
+  }
+  .result-e2 {
+    background: #fef2f2;
+    border: 3px solid #b91c1c;
+    color: #b91c1c;
+  }
+  .result-e1 {
+    background: #fefce8;
+    border: 3px solid #ca8a04;
+    color: #ca8a04;
+  }
+  .note {
+    font-size: 14px;
+    color: #1a1a1a;
+    font-style: italic;
+    margin-top: 6px;
+  }
+
+  /* ===== ARROWS & CONNECTORS ===== */
+  .arrow-down {
+    width: 2px; height: 24px;
+    background: #94a3b8;
+    position: relative;
+  }
+  .arrow-down::after {
+    content: '';
+    position: absolute; bottom: -5px; left: -4px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #94a3b8;
+  }
+
+  .yes-no-split {
+    display: flex;
+    gap: 20px;
+    margin-top: 0;
+  }
+  .yes-no-split .path {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .path-label {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 4px 0;
+  }
+  .path-label.yes { color: #16a34a; }
+  .path-label.no  { color: #dc2626; }
+
+  .arrow-yes {
+    width: 2px; height: 18px;
+    background: #16a34a;
+    position: relative;
+  }
+  .arrow-yes::after {
+    content: '';
+    position: absolute; bottom: -5px; left: -4px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #16a34a;
+  }
+  .arrow-no {
+    width: 2px; height: 18px;
+    background: #dc2626;
+    position: relative;
+  }
+  .arrow-no::after {
+    content: '';
+    position: absolute; bottom: -5px; left: -4px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #dc2626;
+  }
+
+  /* Start node at top */
+  .start-row {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .start-node {
+    display: inline-block;
+    background: #f1f5f9;
+    border: 2.5px solid #334155;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #334155;
+  }
+  .branches-label-row {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 4px;
+  }
+
+  /* Top connector lines */
+  .top-connector {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .connector-line {
+    height: 30px;
+    border-left: 2px solid #94a3b8;
+  }
+</style>
+</head>
+<body>
+
+<h1>Substitution &amp; Elimination — Decision Flowchart</h1>
+<div class="legend">
+  <span><span class="dot" style="border-color:#2563eb;background:#eff6ff"></span> SN2</span>
+  <span><span class="dot" style="border-color:#16a34a;background:#f0fdf4"></span> SN1</span>
+  <span><span class="dot" style="border-color:#b91c1c;background:#fef2f2"></span> E2</span>
+  <span><span class="dot" style="border-color:#ca8a04;background:#fefce8"></span> E1</span>
+</div>
+
+<div class="start-row">
+  <div class="start-node">Substrate Carbon Degree?</div>
+</div>
+
+<div class="chart">
+
+  <!-- ══════ 0° ══════ -->
+  <div class="branch">
+    <div class="degree-label">0°</div>
+    <div class="arrow-down"></div>
+    <div style="height:12px"></div>
+    <div class="node result-sn2">SN2</div>
+  </div>
+
+  <!-- ══════ 1° ══════ -->
+  <div class="branch">
+    <div class="degree-label">1°</div>
+    <div class="arrow-down"></div>
+    <div style="height:12px"></div>
+    <div class="question">Bulky base?</div>
+    <div class="yes-no-split">
+      <div class="path">
+        <div class="path-label yes">Yes</div>
+        <div class="arrow-yes"></div>
+        <div style="height:8px"></div>
+        <div class="node result-e2">E2</div>
+      </div>
+      <div class="path">
+        <div class="path-label no">No</div>
+        <div class="arrow-no"></div>
+        <div style="height:8px"></div>
+        <div class="node result-sn2">SN2</div>
+        <div class="note">(most of the time)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 2° ══════ -->
+  <div class="branch">
+    <div class="degree-label">2°</div>
+    <div class="arrow-down"></div>
+    <div style="height:12px"></div>
+    <div class="question">Nu⁻ has charge?</div>
+    <div class="yes-no-split">
+      <!-- YES: charged -->
+      <div class="path">
+        <div class="path-label yes">Yes</div>
+        <div class="arrow-yes"></div>
+        <div style="height:8px"></div>
+        <div class="question">Strong base?</div>
+        <div class="yes-no-split">
+          <div class="path">
+            <div class="path-label yes">Yes</div>
+            <div class="arrow-yes"></div>
+            <div style="height:8px"></div>
+            <div class="node result-e2">E2</div>
+          </div>
+          <div class="path">
+            <div class="path-label no">No</div>
+            <div class="arrow-no"></div>
+            <div style="height:8px"></div>
+            <div class="node result-sn2">SN2</div>
+          </div>
+        </div>
+      </div>
+      <!-- NO: uncharged -->
+      <div class="path">
+        <div class="path-label no">No</div>
+        <div class="arrow-no"></div>
+        <div style="height:8px"></div>
+        <div class="question">Heat?</div>
+        <div class="yes-no-split">
+          <div class="path">
+            <div class="path-label yes">Yes</div>
+            <div class="arrow-yes"></div>
+            <div style="height:8px"></div>
+            <div class="node result-e1">E1</div>
+          </div>
+          <div class="path">
+            <div class="path-label no">No</div>
+            <div class="arrow-no"></div>
+            <div style="height:8px"></div>
+            <div class="node result-sn1">SN1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 3° ══════ -->
+  <div class="branch">
+    <div class="degree-label">3°</div>
+    <div class="arrow-down"></div>
+    <div style="height:12px"></div>
+    <div class="question">Strong base?</div>
+    <div class="yes-no-split">
+      <div class="path">
+        <div class="path-label yes">Yes</div>
+        <div class="arrow-yes"></div>
+        <div style="height:8px"></div>
+        <div class="node result-e2">E2</div>
+      </div>
+      <div class="path">
+        <div class="path-label no">No</div>
+        <div class="arrow-no"></div>
+        <div style="height:8px"></div>
+        <div class="question">Heat?</div>
+        <div class="yes-no-split">
+          <div class="path">
+            <div class="path-label yes">Yes</div>
+            <div class="arrow-yes"></div>
+            <div style="height:8px"></div>
+            <div class="node result-e1">E1</div>
+          </div>
+          <div class="path">
+            <div class="path-label no">No</div>
+            <div class="arrow-no"></div>
+            <div style="height:8px"></div>
+            <div class="node result-sn1">SN1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
